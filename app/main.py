@@ -66,8 +66,7 @@ def main():
             else:
                 path = handle_executable_files(command)
                 if path:
-                    result = subprocess.run([path] + tokens)
-                    print(result)
+                    subprocess.run([path] + tokens)
                     continue
                 print(f"{inp_line}: command not found")
                 
