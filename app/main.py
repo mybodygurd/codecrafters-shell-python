@@ -1,10 +1,30 @@
 import sys
+import os
+
+PATH = os.environ['PATH']
+sep = os.pathsep
 
 builtins = {
     "exit": "builtin",
     "echo": "builtin",
     "type": "builtin"
 }
+
+def handle_executable_files(command):
+    try:
+        dirs = PATH.split(sep)
+        for dir in dirs:
+            if os.path.exists(dir):
+                for item in os.listdir(dir):
+                    path = os.path.join(dir, item)
+                    item = item.split('.')[0]
+                    if os.path.isfile(path) and item == command:                        
+                        if os.access(path, os.X_OK):
+                            return path
+        return None
+        
+    except (NotADirectoryError, PermissionError):
+        raise
 
 
 def main():
@@ -13,16 +33,31 @@ def main():
             sys.stdout.write("$ ")
 
             inp_line = input().strip()
-            if inp_line.startswith('exit 0'):
+            
+            if not inp_line:
+                continue
+            command, *tokens = inp_line.split()
+            
+            if command == 'exit 0':
                 sys.exit()
-            elif inp_line.startswith('echo '):
-                result = inp_line.split('echo ')[1]
+                
+            elif command == 'echo':
+                result = ' '.join(tokens)
                 print(result)
-            elif inp_line.startswith('type '):
-                result = inp_line.split('type ')[1].split()[0]
-                if result in builtins.keys():
-                    print(f"{result} is a shell {builtins[result]}")
+                
+            elif command == 'type':
+                if len(tokens) == 1:
+                    comm = tokens[0]
+                    path = handle_executable_files(comm)
+                    if path:
+                        print(f"{comm} is {path}")
+                    
+                    elif comm in builtins.keys():
+                        print(f"{comm} is a shell {builtins[comm]}")
+                    else:
+                        print(f"{comm}: not found")
                 else:
+                    result = ' '.join(tokens)
                     print(f"{result}: not found")                
 
             else:    
