@@ -3,7 +3,7 @@ import sys
 builtins = {
     "exit": "builtin",
     "echo": "builtin",
-    "type": " builtin"
+    "type": "builtin"
 }
 
 
