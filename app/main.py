@@ -48,12 +48,19 @@ def main():
             elif command == 'type':
                 if len(tokens) == 1:
                     comm = tokens[0]
-                    path = handle_executable_files(comm)
+                    if comm in builtins.keys():
+                        print(f"{comm} is a shell {builtins[comm]}")
+                        continue
+                    try:
+                        path = handle_executable_files(comm)
+                    except NotADirectoryError as e:
+                        print(f"error in PATH variable directories: {e}")
+                        continue
+                    except PermissionError:
+                        print(f"problem in permission of files")
+                        continue
                     if path:
                         print(f"{comm} is {path}")
-                    
-                    elif comm in builtins.keys():
-                        print(f"{comm} is a shell {builtins[comm]}")
                     else:
                         print(f"{comm}: not found")
                 else:
