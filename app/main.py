@@ -8,7 +8,8 @@ sep = os.pathsep
 builtins = {
     "exit": "builtin",
     "echo": "builtin",
-    "type": "builtin"
+    "type": "builtin",
+    "pwd": "builtin"
 }
 
 def handle_executable_files(command):
