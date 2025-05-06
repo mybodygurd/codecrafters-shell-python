@@ -8,7 +8,7 @@ def main():
 
             inp_line = input().strip()
             if inp_line:
-                print(f"<{inp_line}>: command not found")
+                print(f"{inp_line}: command not found")
                 
         except KeyboardInterrupt:
             sys.exit()
