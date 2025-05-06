@@ -2,10 +2,16 @@ import sys
 
 
 def main():
-    sys.stdout.write("$ ")
+    while True:
+        try:
+            sys.stdout.write("$ ")
 
-    input()
-
+            inp_line = input().strip()
+            if inp_line:
+                print(f"<{inp_line}>: command not found")
+                
+        except KeyboardInterrupt:
+            sys.exit()
 
 if __name__ == "__main__":
     main()
