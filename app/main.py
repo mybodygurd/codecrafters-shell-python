@@ -38,7 +38,7 @@ def main():
                 continue
             command, *tokens = inp_line.split()
             
-            if command == 'exit 0':
+            if inp_line == 'exit 0':
                 sys.exit()
                 
             elif command == 'echo':
