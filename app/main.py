@@ -10,7 +10,7 @@ def main():
             if inp_line.startswith('exit 0'):
                 sys.exit()
             elif inp_line.startswith('echo '):
-                result = inp_line.split('echo ')[0]
+                result = inp_line.split('echo ')[1]
                 print(result)
             else:    
                 print(f"{inp_line}: command not found")
