@@ -7,10 +7,13 @@ def main():
             sys.stdout.write("$ ")
 
             inp_line = input().strip()
-            if inp_line == 'exit':
+            if inp_line.startswith('exit 0'):
                 sys.exit()
-                
-            print(f"{inp_line}: command not found")
+            elif inp_line.startswith('echo '):
+                result = inp_line.split('echo ')[0]
+                print(result)
+            else:    
+                print(f"{inp_line}: command not found")
                 
         except KeyboardInterrupt:
             sys.exit()
