@@ -50,6 +50,9 @@ def main():
             elif command == 'echo':
                 print(' '.join(tokens))
                 
+            elif command == 'pwd':
+                print(os.getcwd())
+                
             elif command == 'type':
                 if not n_tokens:
                     print()
