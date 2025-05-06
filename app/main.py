@@ -7,8 +7,10 @@ def main():
             sys.stdout.write("$ ")
 
             inp_line = input().strip()
-            if inp_line:
-                print(f"{inp_line}: command not found")
+            if inp_line == 'exit':
+                sys.exit()
+                
+            print(f"{inp_line}: command not found")
                 
         except KeyboardInterrupt:
             sys.exit()
