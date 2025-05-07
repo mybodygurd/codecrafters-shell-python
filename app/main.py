@@ -14,6 +14,15 @@ builtins = {
     "pwd": "builtin"
 }
 
+def quote_delimiter_checker(string):
+    stack = []
+    for char in string:
+        if char == "'" and "'" not in stack:
+            stack.append("'")
+        elif char == "'" and "'" in stack:
+            stack.pop()
+    return not stack
+
 def handle_executable_files(command):
     dirs = PATH.split(sep)
     for dir in dirs:
@@ -57,7 +66,16 @@ def main():
                 sys.exit(exit_code)
                 
             elif command == 'echo':
-                print(' '.join(tokens))
+                result = inp_line.split(' ', 1)[1]
+                if "'" in result:
+                    if quote_delimiter_checker(result):
+                        str_idx = result.find("'") + 1
+                        end_idx = result[str_idx:].find("'") + 1
+                        print(result[str_idx: end_idx])
+                    else:
+                        print(f"{result} problem with quotes")
+                else:        
+                    print(result)
                 
             elif command == 'pwd':
                 print(os.getcwd())
@@ -65,26 +83,31 @@ def main():
             elif command == 'cd':
                 try:
                     if not tokens:
-                        os.chdir(ROOT_DIR)
+                        os.chdir(HOME_DIR)
                         
                     elif DIR_SEP in tokens:
                         dirs = tokens[0].split(DIR_SEP)
                         for dir in dirs:
                             if dir == '~':
                                 os.chdir(HOME_DIR)
+                                
                             elif dir == '..':
                                 current_dir = os.getcwd
                                 parent_dir = os.path.dirname(current_dir)
                                 os.chdir(parent_dir)
+                                
                             elif dir == '.':
                                 continue
                             else:
                                 os.chdir(dir)
+                                
                     elif tokens[0] == '~':
                         os.chdir(HOME_DIR)
+                        
                     else:
                         path = tokens[0].strip()
                         os.chdir(path)
+                        
                 except FileNotFoundError:
                     print(f"{path}: No such file or directory")
                     continue
