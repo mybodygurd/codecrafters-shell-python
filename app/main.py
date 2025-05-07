@@ -2,6 +2,8 @@ import sys
 import os
 import subprocess
 
+DIR_SEP = os.sep
+ROOT_DIR = os.path.abspath(DIR_SEP)
 PATH = os.environ['PATH']
 sep = os.pathsep
 
@@ -45,14 +47,55 @@ def main():
             command, *tokens = inp_line.split()
             n_tokens = len(tokens) 
             
-            if inp_line == 'exit 0':
-                sys.exit()
+            if command == 'exit':
+                exit_code = 0
+                try:
+                    exit_code = int(tokens[0])
+                except ValueError:
+                    sys.stderr.write("exit: numeric argument required\n")
+                    exit_code = 1
+                sys.exit(exit_code)
                 
             elif command == 'echo':
                 print(' '.join(tokens))
                 
             elif command == 'pwd':
                 print(os.getcwd())
+                
+            elif command == 'cd':
+                try:
+                    if not tokens:
+                        os.chdir(ROOT_DIR)
+                        
+                    elif DIR_SEP in tokens:
+                        dirs = tokens[0].split(DIR_SEP)
+                        for dir in dirs:
+                            if dir == '~':
+                                os.chdir(ROOT_DIR)
+                            elif dir == '..':
+                                current_dir = os.getcwd
+                                parent_dir = os.path.dirname(current_dir)
+                                os.chdir(parent_dir)
+                            elif dir == '.':
+                                continue
+                            else:
+                                os.chdir(dir)
+                    elif tokens[0] == '~':
+                        os.chdir(ROOT_DIR)
+                    else:
+                        path = tokens[0].strip()
+                        os.chdir(path)
+                except FileNotFoundError:
+                    print(f"{path}: No such file or directory")
+                    continue
+                except NotADirectoryError:
+                    print(f"{path}: is not a directory")
+                    continue
+                except PermissionError:
+                    print(f"{path}: access denied")
+                    continue
+                except OSError:
+                    continue
                 
             elif command == 'type':
                 if not n_tokens:
@@ -75,6 +118,8 @@ def main():
                 print(f"{inp_line}: command not found")
                 
         except KeyboardInterrupt:
+            sys.exit(0)
+        except EOFError:
             sys.exit(0)
 
 if __name__ == "__main__":
