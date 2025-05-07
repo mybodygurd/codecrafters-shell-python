@@ -3,7 +3,7 @@ import os
 import subprocess
 
 DIR_SEP = os.sep
-ROOT_DIR = os.path.abspath(DIR_SEP)
+HOME_DIR = os.path.expanduser('~')
 PATH = os.environ['PATH']
 sep = os.pathsep
 
@@ -71,7 +71,7 @@ def main():
                         dirs = tokens[0].split(DIR_SEP)
                         for dir in dirs:
                             if dir == '~':
-                                os.chdir(ROOT_DIR)
+                                os.chdir(HOME_DIR)
                             elif dir == '..':
                                 current_dir = os.getcwd
                                 parent_dir = os.path.dirname(current_dir)
@@ -81,7 +81,7 @@ def main():
                             else:
                                 os.chdir(dir)
                     elif tokens[0] == '~':
-                        os.chdir(ROOT_DIR)
+                        os.chdir(HOME_DIR)
                     else:
                         path = tokens[0].strip()
                         os.chdir(path)
