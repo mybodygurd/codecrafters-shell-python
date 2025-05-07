@@ -69,9 +69,16 @@ def main():
                 tokens = ' '.join(tokens)
                 if "'" in tokens:
                     if quote_delimiter_checker(tokens):
-                        str_idx = tokens.find("'") + 1
-                        end_idx = tokens[str_idx:].find("'") + 1
-                        print(tokens[str_idx: end_idx])
+                        buffer  = []
+                        in_quote = False
+                        for idx, char in enumerate(tokens):
+                            if char == "'" and not in_quote:
+                                str_idx = idx + 1
+                                in_quote = True
+                            elif char == "'" and in_quote:
+                                buffer.append(tokens[str_idx: idx])
+                                in_quote = False
+                        print(' '.join(buffer))
                     else:
                         print(f"{tokens} problem with quotes")
                 else:        
