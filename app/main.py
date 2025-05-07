@@ -66,16 +66,16 @@ def main():
                 sys.exit(exit_code)
                 
             elif command == 'echo':
-                result = inp_line.split(' ', 1)[1]
-                if "'" in result:
-                    if quote_delimiter_checker(result):
-                        str_idx = result.find("'") + 1
-                        end_idx = result[str_idx:].find("'") + 1
-                        print(result[str_idx: end_idx])
+                tokens = ' '.join(tokens)
+                if "'" in tokens:
+                    if quote_delimiter_checker(tokens):
+                        str_idx = tokens.find("'") + 1
+                        end_idx = tokens[str_idx:].find("'") + 1
+                        print(tokens[str_idx: end_idx])
                     else:
-                        print(f"{result} problem with quotes")
+                        print(f"{tokens} problem with quotes")
                 else:        
-                    print(result)
+                    print(tokens)
                 
             elif command == 'pwd':
                 print(os.getcwd())
