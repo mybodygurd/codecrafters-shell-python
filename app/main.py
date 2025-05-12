@@ -52,8 +52,9 @@ def main():
             if not inp_line:
                 continue
             
-            tokens = shlex.split(inp_line)
-            command = tokens[0]
+            parts = shlex.split(inp_line)
+            command = parts[0]
+            tokens = parts[1:]
             n_tokens = len(tokens) - 1
             
             if command == 'exit':
@@ -66,7 +67,7 @@ def main():
                 sys.exit(exit_code)
                 
             elif command == 'echo':
-                print(' '.join(tokens[1:]))
+                print(' '.join(tokens))
                 
             elif command == 'pwd':
                 print(os.getcwd())
@@ -127,7 +128,7 @@ def main():
             else:
                 path = handle_executable_files(command)
                 if path:
-                    subprocess.run([command] + tokens[1:])
+                    subprocess.run([command] + tokens)
                     continue
                 print(f"{inp_line}: command not found")
                 
