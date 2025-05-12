@@ -113,12 +113,9 @@ def main():
                     continue
                 
             elif command == 'type':
-                print("1 con")
                 if not tokens:
-                    print("2 con")
                     continue
                 for token in tokens:
-                    print("3 con")
                     if token in builtins:
                         print(f"{token} is a shell {builtins[token]}")
                     else:    
