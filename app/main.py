@@ -66,7 +66,7 @@ def main():
                 sys.exit(exit_code)
                 
             elif command == 'echo':
-                print(' '.join(tokens))
+                print(' '.join(tokens[1:]))
                 
             elif command == 'pwd':
                 print(os.getcwd())
