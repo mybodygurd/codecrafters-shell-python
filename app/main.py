@@ -114,10 +114,9 @@ def main():
                 
             elif command == 'type':
                 if not n_tokens:
-                    print()
                     continue
                 for token in tokens:
-                    if token in builtins.keys():
+                    if token in builtins:
                         print(f"{token} is a shell {builtins[token]}")
                     else:    
                         path = handle_executable_files(token)
