@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import shlex
 
 DIR_SEP = os.sep
 HOME_DIR = os.path.expanduser('~')
@@ -41,9 +42,6 @@ def handle_executable_files(command):
                 continue
     return None
         
-    
-
-
 def main():
     while True:
         try:
@@ -53,8 +51,10 @@ def main():
             
             if not inp_line:
                 continue
-            command, *tokens = inp_line.split()
-            n_tokens = len(tokens) 
+            
+            tokens = shlex.split(inp_line)
+            command = tokens[0]
+            n_tokens = len(tokens) - 1
             
             if command == 'exit':
                 exit_code = 0
@@ -66,23 +66,7 @@ def main():
                 sys.exit(exit_code)
                 
             elif command == 'echo':
-                tokens = ' '.join(tokens)
-                if "'" in tokens:
-                    if quote_delimiter_checker(tokens):
-                        buffer  = []
-                        in_quote = False
-                        for idx, char in enumerate(tokens):
-                            if char == "'" and not in_quote:
-                                str_idx = idx + 1
-                                in_quote = True
-                            elif char == "'" and in_quote:
-                                buffer.append(tokens[str_idx: idx])
-                                in_quote = False
-                        print(' '.join(buffer))
-                    else:
-                        print(f"{tokens} problem with quotes")
-                else:        
-                    print(tokens)
+                print(' '.join(tokens))
                 
             elif command == 'pwd':
                 print(os.getcwd())
