@@ -8,15 +8,6 @@ HOME_DIR = os.path.expanduser('~')
 PATH = os.environ['PATH']
 sep = os.pathsep
 
-# def quote_delimiter_checker(string):
-#     stack = []
-#     for char in string:
-#         if char == "'" and "'" not in stack:
-#             stack.append("'")
-#         elif char == "'" and "'" in stack:
-#             stack.pop()
-#     return not stack
-
 def handle_executable_files(command):
     dirs = PATH.split(sep)
     for dir in dirs:
@@ -47,7 +38,7 @@ def handle_change_dir(tokens):
                     os.chdir(HOME_DIR)
                     
                 elif dir == '..':
-                    current_dir = os.getcwd
+                    current_dir = os.getcwd()
                     parent_dir = os.path.dirname(current_dir)
                     os.chdir(parent_dir)
                     
@@ -65,16 +56,13 @@ def handle_change_dir(tokens):
             
     except FileNotFoundError:
         print(f"{path}: No such file or directory")
-        raise
     except NotADirectoryError:
-        print(f"{path}: is not a directory")
-        raise
+        print(f"{path}: Not a Directory")
     except PermissionError:
-        print(f"{path}: access denied")
-        raise
-    except OSError:
-        raise
-    
+        print(f"{path}: Permission denied")
+    except OSError as e:
+        print(f"{path}: OS error({e})")
+        
 def handle_exit(tokens: list):
     exit_code = 0
     try:
@@ -99,11 +87,32 @@ def handle_type(tokens: list):
 builtins = {
     "exit": handle_exit,
     "echo": lambda x: print(' '.join(x)),
-    "type": "builtin",
+    "type": handle_type,
     "pwd": lambda x: print(os.getcwd()),
     "cd": handle_change_dir
 }
-    
+
+operators = [">", "1>", ">>", "1>>", "2>", "2>>"]
+
+def redirect(parts):
+    for idx in range(len(parts)):
+        if parts[idx] in operators:
+            cmd_part = parts[: idx]
+            file_name = parts[idx + 1]
+            if parts[idx] in [">", "1>"]:
+                with open(file_name, mode='w') as file:
+                    subprocess.run(cmd_part, stdout=file)
+            elif parts[idx] in [">>", "1>>"]:
+                with open(file_name, mode='a') as file:
+                    subprocess.run(cmd_part, stdout=file)
+            elif parts[idx] == "2>":
+                with open(file_name, mode='w') as file:
+                    subprocess.run(cmd_part, stderr=file)
+            elif parts[idx] == "2>>":
+                with open(file_name, mode='a') as file:
+                    subprocess.run(cmd_part, stderr=file)
+            return True
+    return False
         
 def main():
     while True:
@@ -118,17 +127,27 @@ def main():
             parts = shlex.split(inp_line)
             command = parts[0]
             tokens = parts[1:]
-            
+            # if any(op in tokens for op in operators):
+            # handled = redirect(parts)
+            # if handled:
+            #     continue  # ✅ Skip rest of the shell loop (this 'continue' affects the while-loop)
+            result = False
+            for operator in operators:
+                if operator in tokens:
+                    result = redirect(parts)
+                    if result:
+                        break
+            if result:
+                continue
             if command in builtins:
-                function = builtins[command]
-                function(tokens)
-                
+                handler = builtins[command]
+                handler(tokens) 
             else:
                 path = handle_executable_files(command)
                 if path:
                     subprocess.run([command] + tokens)
-                    continue
-                print(f"{inp_line}: command not found")
+                else:    
+                    print(f"{inp_line}: command not found")
                 
         except KeyboardInterrupt:
             sys.exit(0)
