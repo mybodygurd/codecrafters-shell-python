@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import shlex
+import readline
 
 DIR_SEP = os.sep
 HOME_DIR = os.path.expanduser('~')
@@ -113,7 +114,16 @@ def redirect(parts):
                     subprocess.run(cmd_part, stderr=file)
             return True
     return False
-        
+
+def completer(text, state):
+    matches = [cmd for cmd in builtins if cmd.startswith(text)]
+    if state < len(matches):
+        return matches[state]
+    return None
+
+readline.parse_and_bind("tab: complete")
+readline.set_completer(completer) 
+            
 def main():
     while True:
         try:
