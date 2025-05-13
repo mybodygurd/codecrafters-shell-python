@@ -116,7 +116,7 @@ def redirect(parts):
     return False
 
 def completer(text, state):
-    matches = [cmd for cmd in builtins if cmd.startswith(text)]
+    matches = [cmd + ' ' for cmd in builtins if cmd.startswith(text)]
     if state < len(matches):
         return matches[state]
     return None
