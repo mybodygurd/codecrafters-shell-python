@@ -115,16 +115,6 @@ def redirect(parts):
             return True
     return False
 
-import os
-import readline
-
-# Built-in commands
-builtins = ['cd', 'exit', 'pwd', 'echo', 'help']
-
-# Path separator and system PATH
-PATH = os.environ['PATH']
-sep = os.pathsep
-
 def completer(text, state):
     commands = set(builtins)  # Use a set to avoid duplicates
     for dir in PATH.split(sep):
