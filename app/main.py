@@ -115,14 +115,37 @@ def redirect(parts):
             return True
     return False
 
+import os
+import readline
+
+# Built-in commands
+builtins = ['cd', 'exit', 'pwd', 'echo', 'help']
+
+# Path separator and system PATH
+PATH = os.environ['PATH']
+sep = os.pathsep
+
 def completer(text, state):
-    matches = [cmd + ' ' for cmd in builtins if cmd.startswith(text)]
+    commands = set(builtins)  # Use a set to avoid duplicates
+    for dir in PATH.split(sep):
+        if os.path.isdir(dir):
+            try:
+                for item in os.listdir(dir):
+                    full_path = os.path.join(dir, item)
+                    if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+                        commands.add(item)
+            except PermissionError:
+                continue
+    matches = [cmd + ' ' for cmd in commands if cmd.startswith(text)]
+
+    # Return match based on the state (0 = first, 1 = second, etc.)
     if state < len(matches):
         return matches[state]
     return None
 
+readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
-readline.set_completer(completer) 
+
             
 def main():
     while True:
