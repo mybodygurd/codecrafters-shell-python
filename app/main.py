@@ -110,8 +110,9 @@ def completer(text, state):
             except PermissionError:
                 continue
 
-    matches = [cmd + ' ' for cmd in sorted(commands) if cmd.startswith(text)]
+    matches = [cmd for cmd in sorted(commands) if cmd.startswith(text)]
 
+    # Track how many times <TAB> was pressed on the same input
     if state == 0:
         if text == last_tab_text:
             tab_press_count += 1
@@ -119,18 +120,21 @@ def completer(text, state):
             last_tab_text = text
             tab_press_count = 1
 
-        if len(matches) > 1:
-            if tab_press_count == 1:
-                print('\a', end='', flush=True)
-            elif tab_press_count == 2:
-                print()  # newline
-                print("  ".join(matches))
-                sys.stdout.write(f"$ {text}")
-                sys.stdout.flush()
+        # On first tab, ring bell if multiple matches
+        if len(matches) > 1 and tab_press_count == 1:
+            print('\a', end='', flush=True)
+        # On second tab, print all matches separated by 2 spaces
+        elif len(matches) > 1 and tab_press_count == 2:
+            print()  # newline
+            print("  ".join(matches))  # use two spaces between
+            sys.stdout.write(f"$ {text}")
+            sys.stdout.flush()
 
+    # When actually returning match (used by readline), add trailing space
     if state < len(matches):
-        return matches[state]
+        return matches[state] + ' '
     return None
+
 
 
     
