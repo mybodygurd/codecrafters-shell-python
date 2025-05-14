@@ -110,7 +110,7 @@ def completer(text, state):
             except PermissionError:
                 continue
 
-    matches = [cmd for cmd in sorted(commands) if cmd.startswith(text)]
+    matches = [cmd + ' ' for cmd in sorted(commands) if cmd.startswith(text)]
 
     if state == 0:
         if text == last_tab_text:
