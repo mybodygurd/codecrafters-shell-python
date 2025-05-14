@@ -94,8 +94,9 @@ def redirect(parts):
     return False
 
 def completer(text, state):
-    commands = set(builtins) # Use a set to avoid duplicates
-    
+    global last_tab_text, tab_press_count  # You must track these elsewhere
+
+    commands = set(builtins)
     for dir in PATH.split(sep):
         if os.path.isdir(dir):
             try:
@@ -105,12 +106,29 @@ def completer(text, state):
                         commands.add(item)
             except PermissionError:
                 continue
+
     matches = [cmd for cmd in commands if cmd.startswith(text)]
 
-    # Return match based on the state (0 = first, 1 = second, etc.)
+    # Track tab press count for repeated presses
+    if state == 0:
+        if text == last_tab_text:
+            tab_press_count += 1
+        else:
+            last_tab_text = text
+            tab_press_count = 1
+
+        if len(matches) > 1:
+            if tab_press_count == 1:
+                print('\a', end='', flush=True)
+            elif tab_press_count == 2:
+                print()  # newline
+                print("  ".join(matches))
+                print(f"$ {text}", end='', flush=True)
+
     if state < len(matches):
         return matches[state]
     return None
+
     
 
 readline.set_completer(completer)
