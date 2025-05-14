@@ -4,8 +4,6 @@ import subprocess
 import shlex
 import readline
 
-DIR_SEP = os.sep
-HOME_DIR = os.path.expanduser('~')
 PATH = os.environ['PATH']
 sep = os.pathsep
 
@@ -30,31 +28,11 @@ def handle_executable_files(command):
 def handle_change_dir(tokens):
     try:
         if not tokens:
-            os.chdir(HOME_DIR)
-            
-        elif DIR_SEP in tokens:
-            dirs = tokens[0].split(DIR_SEP)
-            for dir in dirs:
-                if dir == '~':
-                    os.chdir(HOME_DIR)
-                    
-                elif dir == '..':
-                    current_dir = os.getcwd()
-                    parent_dir = os.path.dirname(current_dir)
-                    os.chdir(parent_dir)
-                    
-                elif dir == '.':
-                    continue
-                else:
-                    os.chdir(dir)
-                    
-        elif tokens[0] == '~':
-            os.chdir(HOME_DIR)
-            
+            path = os.path.expanduser('~')
         else:
-            path = tokens[0].strip()
-            os.chdir(path)
-            
+            path = os.path.expanduser(tokens[0])
+        os.chdir(path)
+
     except FileNotFoundError:
         print(f"{path}: No such file or directory")
     except NotADirectoryError:
@@ -116,7 +94,8 @@ def redirect(parts):
     return False
 
 def completer(text, state):
-    commands = set(builtins)  # Use a set to avoid duplicates
+    commands = set(builtins) # Use a set to avoid duplicates
+    
     for dir in PATH.split(sep):
         if os.path.isdir(dir):
             try:
@@ -126,12 +105,13 @@ def completer(text, state):
                         commands.add(item)
             except PermissionError:
                 continue
-    matches = [cmd + ' ' for cmd in commands if cmd.startswith(text)]
+    matches = [cmd for cmd in commands if cmd.startswith(text)]
 
     # Return match based on the state (0 = first, 1 = second, etc.)
     if state < len(matches):
         return matches[state]
     return None
+    
 
 readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
