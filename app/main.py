@@ -135,13 +135,30 @@ def completer(text, state):
         return matches[state] + ' '
     return None
 
-
-
-    
-
 readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
 
+def execute_pipeline(cmd1, cmd2):
+    pipe_fd = os.pipe()
+    pid1 = os.fork()
+    if pid1 == 0:
+        # Close the pipe's read end
+        os.close(pipe_fd[0])
+        os.dup2(pipe_fd[1], sys.stdout.fileno())
+        subprocess.run(cmd1)
+        sys.exit(0)
+    pid2 = os.fork()
+    if pid2 == 0:
+        os.close(pipe_fd[1])
+        os.dup2(pipe_fd[0], sys.stdout.fileno())
+        subprocess.run(cmd2)
+        sys.exit(0)
+        
+    os.close(pipe_fd[0])
+    os.close(pipe_fd[1])
+    
+    os.waitpid(pid1, 0)
+    os.waitpid(pid2, 0)
             
 def main():
     while True:
@@ -168,6 +185,12 @@ def main():
                         break
             if result:
                 continue
+            
+            if '|' in tokens:
+                for i in range(len(tokens)):
+                    if tokens[i] == '|':
+                        execute_pipeline(tokens[:i], tokens[i + 1:])
+                
             if command in builtins:
                 handler = builtins[command]
                 handler(tokens) 
