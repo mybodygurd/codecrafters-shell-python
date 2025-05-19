@@ -182,7 +182,7 @@ def execute_pipelines(commands):
                 output.close()
             else:
                 try:
-                    subprocess.run(cmd, check=True)
+                    subprocess.run(cmd, check=False)
                 except FileNotFoundError:
                     print(f"{cmd[0]}: command not found", file=sys.stderr)
                 except PermissionError:
