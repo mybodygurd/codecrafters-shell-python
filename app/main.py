@@ -144,7 +144,7 @@ def execute_pipelines(commands):
     pipes = [os.pipe() for _ in range(n_pipes)]
     
     for i, cmd in enumerate(commands):
-        builtin = cmd in builtins
+        builtin = cmd[0] in builtins
         pid = os.fork()
         if pid == 0:
             if i > 0:
@@ -180,7 +180,7 @@ def main():
             
             if not inp_line:
                 continue
-            pipeline_parts = [part.split().strip() for part in inp_line.split('|')]
+            pipeline_parts = [part.strip().split() for part in inp_line.split('|')]
             if len(pipeline_parts) > 1:
                 execute_pipelines(pipeline_parts)
                 continue
