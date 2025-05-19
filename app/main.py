@@ -3,6 +3,7 @@ import os
 import subprocess
 import shlex
 import readline
+import io
 
 PATH = os.environ['PATH']
 sep = os.pathsep
@@ -138,72 +139,67 @@ def completer(text, state):
 readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
 
-def execute_pipeline(cmd1, cmd2):
-    pipe_fd = os.pipe()
-    pid1 = os.fork()
-    if pid1 == 0:
-        # Close the pipe's read end
-        os.close(pipe_fd[0])
-        os.dup2(pipe_fd[1], sys.stdout.fileno())
-        subprocess.run(cmd1)
-        sys.exit(0)
-    pid2 = os.fork()
-    if pid2 == 0:
-        os.close(pipe_fd[1])
-        os.dup2(pipe_fd[0], sys.stdout.fileno())
-        subprocess.run(cmd2)
-        sys.exit(0)
-        
-    os.close(pipe_fd[0])
-    os.close(pipe_fd[1])
+def execute_pipelines(commands):
+    n_pipes = len(commands) - 1
+    pipes = [os.pipe() for _ in range(n_pipes)]
     
-    os.waitpid(pid1, 0)
-    os.waitpid(pid2, 0)
+    for i, cmd in enumerate(commands):
+        builtin = cmd in builtins
+        pid = os.fork()
+        if pid == 0:
+            if i > 0:
+                os.dup2(pipes[i - 1][0], sys.stdout.fileno())
+            if i < n_pipes:
+                os.dup2(pipes[i][1], sys.stdin.fileno())
+                
+            for pipe in pipes:
+                os.close(pipe[0])
+                os.close(pipe[1])
+            
+            if builtin:
+                output = io.StringIO()
+                sys.stdout = output
+                builtins[cmd[0]](cmd[1:])
+                sys.stdout = sys.__stdout__
+                print(output.getvalue(), end='')
+                output.close()
+            else:
+                subprocess.run(cmd)
+            sys.exit(0)
+    for pipe in pipes:
+        os.close(pipe[0])
+        os.close(pipe[1])
+    for _ in commands:
+        os.wait()
             
 def main():
     while True:
         try:
             sys.stdout.write("$ ")
-
             inp_line = input().strip()
             
             if not inp_line:
                 continue
-            
+            pipeline_parts = [part.split().strip() for part in inp_line.split('|')]
+            if len(pipeline_parts) > 1:
+                execute_pipelines(pipeline_parts)
+                continue
             parts = shlex.split(inp_line)
             command = parts[0]
             tokens = parts[1:]
-            # if any(op in tokens for op in operators):
-            # handled = redirect(parts)
-            # if handled:
-            #     continue  # ✅ Skip rest of the shell loop (this 'continue' affects the while-loop)
-            result = False
-            for operator in operators:
-                if operator in tokens:
-                    result = redirect(parts)
-                    if result:
-                        break
-            if result:
+            if any(op in tokens for op in operators):
+                redirect(parts)
                 continue
-            
-            if '|' in tokens:
-                for i in range(len(tokens)):
-                    if tokens[i] == '|':
-                        execute_pipeline(tokens[:i], tokens[i + 1:])
                 
             if command in builtins:
-                handler = builtins[command]
-                handler(tokens) 
+                builtins[command](tokens)
             else:
                 path = handle_executable_files(command)
                 if path:
                     subprocess.run([command] + tokens)
                 else:    
-                    print(f"{inp_line}: command not found")
-                
-        except KeyboardInterrupt:
-            sys.exit(0)
-        except EOFError:
+                    print(f"{inp_line}: command not found")      
+        except (KeyboardInterrupt, EOFError):
             sys.exit(0)
 
 if __name__ == "__main__":
