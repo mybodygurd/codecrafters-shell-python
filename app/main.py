@@ -140,31 +140,55 @@ readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
 
 def execute_pipelines(commands):
+    """
+    Execute a pipeline of commands, supporting built-ins and multiple pipes.
+    commands: List of command lists, e.g., [['ls', '-la'], ['tail', '-n', '5'], ['head', '-n', '3'], ['grep', 'f-51']]
+    """
     n_pipes = len(commands) - 1
     pipes = [os.pipe() for _ in range(n_pipes)]
-    
+
     for i, cmd in enumerate(commands):
         builtin = cmd[0] in builtins
         pid = os.fork()
-        if pid == 0:
+        if pid == 0:  # Child process
+            # Set up input: Read from previous pipe (not for first command)
             if i > 0:
-                os.dup2(pipes[i - 1][0], sys.stdin.fileno())
+                os.dup2(pipes[i-1][0], sys.stdin.fileno())
+                os.close(pipes[i-1][0])  # Close read end after use
+                os.close(pipes[i-1][1])  # Close write end
+
+            # Set up output: Write to next pipe (not for last command)
             if i < n_pipes:
                 os.dup2(pipes[i][1], sys.stdout.fileno())
-                
-            for pipe in pipes:
-                os.close(pipe[0])
-                os.close(pipe[1])
-            
+                os.close(pipes[i][0])  # Close read end
+                os.close(pipes[i][1])  # Close write end after use
+
+            # Close remaining pipe ends from other pipes
+            for j in range(n_pipes):
+                if j != i and j != i-1:
+                    os.close(pipes[j][0])
+                    os.close(pipes[j][1])
+
+            # Execute the command
             if builtin:
                 output = io.StringIO()
                 sys.stdout = output
-                builtins[cmd[0]](cmd[1:])
+                try:
+                    builtins[cmd[0]](cmd[1:])
+                except Exception as e:
+                    print(f"Error in {cmd[0]}: {e}", file=sys.stderr)
                 sys.stdout = sys.__stdout__
                 print(output.getvalue(), end='')
                 output.close()
             else:
-                subprocess.run(cmd)
+                try:
+                    subprocess.run(cmd, check=True)
+                except subprocess.CalledProcessError as e:
+                    print(f"Error in {cmd[0]}: {e}", file=sys.stderr)
+                except FileNotFoundError:
+                    print(f"{cmd[0]}: command not found", file=sys.stderr)
+                except PermissionError:
+                    print(f"{cmd[0]}: permission denied", file=sys.stderr)
             sys.exit(0)
     for pipe in pipes:
         os.close(pipe[0])
