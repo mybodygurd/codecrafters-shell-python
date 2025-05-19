@@ -148,9 +148,9 @@ def execute_pipelines(commands):
         pid = os.fork()
         if pid == 0:
             if i > 0:
-                os.dup2(pipes[i - 1][0], sys.stdout.fileno())
+                os.dup2(pipes[i - 1][0], sys.stdin.fileno())
             if i < n_pipes:
-                os.dup2(pipes[i][1], sys.stdin.fileno())
+                os.dup2(pipes[i][1], sys.stdout.fileno())
                 
             for pipe in pipes:
                 os.close(pipe[0])
