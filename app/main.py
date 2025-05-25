@@ -66,13 +66,16 @@ def handle_type(tokens: list):
             else:
                 print(f"{token}: not found")
  
+def handle_history(tokens):
+    pass
 
 builtins = {
     "exit": handle_exit,
     "echo": lambda x: print(' '.join(x)),
     "type": handle_type,
     "pwd": lambda x: print(os.getcwd()),
-    "cd": handle_change_dir
+    "cd": handle_change_dir,
+    "history": handle_history
 }
 
 operators = [">", "1>", ">>", "1>>", "2>", "2>>"]
@@ -140,10 +143,6 @@ readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
 
 def execute_pipelines(commands):
-    """
-    Execute a pipeline of commands, supporting built-ins and multiple pipes.
-    commands: List of command lists, e.g., [['ls', '-la'], ['tail', '-n', '5'], ['head', '-n', '3'], ['grep', 'f-51']]
-    """
     n_pipes = len(commands) - 1
     pipes = [os.pipe() for _ in range(n_pipes)]
 
@@ -205,6 +204,7 @@ def main():
             if not inp_line:
                 continue
             pipeline_parts = [part.strip().split() for part in inp_line.split('|')]
+            
             if len(pipeline_parts) > 1:
                 execute_pipelines(pipeline_parts)
                 continue
