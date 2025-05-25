@@ -10,6 +10,7 @@ sep = os.pathsep
 
 last_tab_text = ""
 tab_press_count = 0
+HISTORY = []
 
 def handle_executable_files(command):
     dirs = PATH.split(sep)
@@ -65,9 +66,15 @@ def handle_type(tokens: list):
                 print(f"{token} is {path}")
             else:
                 print(f"{token}: not found")
- 
-def handle_history(tokens):
-    pass
+
+def add_history(line: str) -> None:
+    HISTORY.append(line)
+    
+def handle_history(tokens: list[str]):
+    for line in HISTORY:
+        print(line)
+    
+    
 
 builtins = {
     "exit": handle_exit,
@@ -203,6 +210,8 @@ def main():
             
             if not inp_line:
                 continue
+            add_history(inp_line)
+            
             pipeline_parts = [part.strip().split() for part in inp_line.split('|')]
             
             if len(pipeline_parts) > 1:
