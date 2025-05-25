@@ -71,11 +71,9 @@ def add_history(line: str) -> None:
     HISTORY.append(line)
     
 def handle_history(tokens: list[str]):
-    for line in HISTORY:
-        print(line)
+    for idx, line in enumerate(HISTORY):
+        print(f"    {idx + 1}  {line}")
     
-    
-
 builtins = {
     "exit": handle_exit,
     "echo": lambda x: print(' '.join(x)),
