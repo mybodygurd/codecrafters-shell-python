@@ -206,8 +206,8 @@ def execute_pipelines(commands):
 def main():
     while True:
         try:
-            sys.stdout.write("$ ")
-            inp_line = input().strip()
+            # sys.stdout.write("$ ")
+            inp_line = input("$ ").strip()
             
             if not inp_line:
                 continue
