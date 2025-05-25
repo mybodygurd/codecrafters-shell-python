@@ -10,7 +10,6 @@ sep = os.pathsep
 
 last_tab_text = ""
 tab_press_count = 0
-HISTORY = []
 
 def handle_executable_files(command):
     dirs = PATH.split(sep)
@@ -66,19 +65,17 @@ def handle_type(tokens: list):
                 print(f"{token} is {path}")
             else:
                 print(f"{token}: not found")
-
-def add_history(line: str) -> None:
-    HISTORY.append(line)
     
 def handle_history(tokens: list[str]) -> None:
+    history_len = readline.get_current_history_length()
     if tokens and tokens[0].isdigit():
         attribute = int(tokens[0])
-        start_idx = len(HISTORY) - attribute
-        for i in range(attribute):
-            print(f"    {start_idx + i + 1}  {HISTORY[-(attribute - i)]}")
+        start_idx = history_len - attribute
+        for i in range(start_idx, history_len):
+            print(f"    {i + 1}  {readline.get_history_item(i + 1)}")
     else:
-        for idx, line in enumerate(HISTORY):
-            print(f"    {idx + 1}  {line}")
+        for i in range(history_len):
+            print(f"    {i + 1}  {readline.get_history_item(i + 1)}")
     
 builtins = {
     "exit": handle_exit,
@@ -214,7 +211,7 @@ def main():
             
             if not inp_line:
                 continue
-            add_history(inp_line)
+            readline.add_history(inp_line)
             
             pipeline_parts = [part.strip().split() for part in inp_line.split('|')]
             
