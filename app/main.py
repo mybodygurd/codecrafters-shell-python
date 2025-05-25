@@ -70,9 +70,15 @@ def handle_type(tokens: list):
 def add_history(line: str) -> None:
     HISTORY.append(line)
     
-def handle_history(tokens: list[str]):
-    for idx, line in enumerate(HISTORY):
-        print(f"    {idx + 1}  {line}")
+def handle_history(tokens: list[str]) -> None:
+    if tokens and tokens[0].isdigit():
+        attribute = int(tokens[0])
+        start_idx = len(HISTORY) - attribute
+        for i in range(attribute):
+            print(f"    {start_idx + i + 1}  {HISTORY[-(attribute - i)]}")
+    else:
+        for idx, line in enumerate(HISTORY):
+            print(f"    {idx + 1}  {line}")
     
 builtins = {
     "exit": handle_exit,
