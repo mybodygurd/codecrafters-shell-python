@@ -149,6 +149,7 @@ def completer(text, state):
 
 readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
+readline.set_history_length(-1)
 
 def execute_pipelines(commands):
     n_pipes = len(commands) - 1
